@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>İTÜ Personel Özlük Sistemi</title>
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>İTÜ Personel Özlük Sistemi</h1>
+            <p class="subtitle">Personnel Management System</p>
+        </header>
+
+        <nav class="tabs">
+            <button class="tab-button active" data-tab="persons">Tüm Personel</button>
+            <button class="tab-button" data-tab="research-assistant">Araştırma Görevlisi</button>
+            <button class="tab-button" data-tab="instructor">Öğretim Görevlisi</button>
+            <button class="tab-button" data-tab="doctor-lecturer">Dr. Öğretim Üyesi</button>
+            <button class="tab-button" data-tab="associate-prof">Doçent</button>
+            <button class="tab-button" data-tab="professor">Profesör</button>
+            <button class="tab-button" data-tab="administrative">İdari Personel</button>
+            <button class="tab-button" data-tab="system-admin">Sistem Yöneticileri</button>
+        </nav>
+
+        <div class="toolbar">
+            <button id="addNewBtn" class="btn btn-primary">+ Yeni Kayıt Ekle</button>
+            <button id="exportBtn" class="btn btn-secondary">📥 JSON İndir</button>
+            <button id="importBtn" class="btn btn-secondary">📤 JSON Yükle</button>
+            <button id="notificationsBtn" class="btn btn-secondary">🔔 Bildirimler <span id="notificationCount" class="badge badge-danger" style="display:none">0</span></button>
+            <input type="file" id="fileInput" accept=".json" style="display: none;">
+            <div class="search-box">
+                <input type="text" id="searchInput" placeholder="Ara (isim, sicil no, mail...)">
+            </div>
+        </div>
+
+        <!-- Notifications Panel -->
+        <div id="notificationsPanel" class="notifications-panel" style="display: none;">
+            <h3>Bildirimler</h3>
+            <div id="notificationsList"></div>
+        </div>
+
+        <!-- Tab Content Areas -->
+        <div id="persons" class="tab-content active">
+            <div id="personsCards" class="cards-container"></div>
+        </div>
+
+        <div id="research-assistant" class="tab-content">
+            <div id="researchAssistantCards" class="cards-container"></div>
+        </div>
+
+        <div id="instructor" class="tab-content">
+            <div id="instructorCards" class="cards-container"></div>
+        </div>
+
+        <div id="doctor-lecturer" class="tab-content">
+            <div id="doctorLecturerCards" class="cards-container"></div>
+        </div>
+
+        <div id="associate-prof" class="tab-content">
+            <div id="associateProfCards" class="cards-container"></div>
+        </div>
+
+        <div id="professor" class="tab-content">
+            <div id="professorCards" class="cards-container"></div>
+        </div>
+
+        <div id="administrative" class="tab-content">
+            <div id="administrativeCards" class="cards-container"></div>
+        </div>
+
+        <div id="system-admin" class="tab-content">
+            <div id="systemAdminCards" class="cards-container"></div>
+        </div>
+    </div>
+
+    <!-- Modal for Adding/Editing -->
+    <div id="modal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h2 id="modalTitle">Yeni Kayıt Ekle</h2>
+            <div id="modalBody"></div>
+        </div>
+    </div>
+
+    <!-- Alert/Notification -->
+    <div id="alert" class="alert"></div>
+
+    <script src="js/storage.js"></script>
+    <script src="js/validation.js"></script>
+    <script src="js/business_logic.js"></script>
+    <script src="js/ui.js"></script>
+    <script src="js/app.js"></script>
+</body>
+</html>
