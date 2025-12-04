@@ -1,0 +1,25 @@
+networks:
+  fintechnet:
+
+services:
+  database:
+    container_name: database
+    build: ./database
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    networks:
+      - fintechnet
+    restart: always
+  backend:
+    container_name: backend
+    build: ./backend
+    volumes:
+      - ./backend:/app
+    depends_on:
+      - database
+    ports:
+      - "8000:8000"
+    networks:
+      - fintechnet
+volumes:
+  pgdata:

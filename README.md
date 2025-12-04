@@ -1,6 +1,5 @@
-# ITU
+# Under ITU_ShopEasy_API you might find API for flutter
+![img1](./ITU_ShopEasy_API/assets/api_urls.png)
 
-The codes I have for Istanbul Technical University are here.
-
-Branches of this repo:
-- **itu_ozluk_frontend_only:**  I store frontend only version of "Personel Özlük Yönetim Sistemi"
+# Under ITU_ShopEasy_APP you might find flutter application
+![img2](./ITU_ShopEasy_APP/assets/flutter.png)
