@@ -1,0 +1,346 @@
+{
+  "persons": [
+    {
+      "tc_no": "12345678901",
+      "name": "Ahmet",
+      "mid_name": "Can",
+      "surname": "Yılmaz",
+      "personal_mail": "ahmet.yilmaz@gmail.com",
+      "gender": "Erkek",
+      "registr_no": 150001001
+    },
+    {
+      "tc_no": "23456789012",
+      "name": "Ayşe",
+      "mid_name": null,
+      "surname": "Demir",
+      "personal_mail": "ayse.demir@gmail.com",
+      "gender": "Kadın",
+      "registr_no": 150001002
+    },
+    {
+      "tc_no": "34567890123",
+      "name": "Mehmet",
+      "mid_name": "Ali",
+      "surname": "Kaya",
+      "personal_mail": null,
+      "gender": "Erkek",
+      "registr_no": 150001003
+    },
+    {
+      "tc_no": "45678901234",
+      "name": "Fatma",
+      "mid_name": null,
+      "surname": "Şahin",
+      "personal_mail": "fatma.sahin@gmail.com",
+      "gender": "Kadın",
+      "registr_no": 150001004
+    },
+    {
+      "tc_no": "56789012345",
+      "name": "Ali",
+      "mid_name": "Rıza",
+      "surname": "Özkan",
+      "personal_mail": null,
+      "gender": "Erkek",
+      "registr_no": 150001005
+    },
+    {
+      "tc_no": "67890123456",
+      "name": "Zeynep",
+      "mid_name": null,
+      "surname": "Arslan",
+      "personal_mail": "zeynep.arslan@gmail.com",
+      "gender": "Kadın",
+      "registr_no": 150001006
+    },
+    {
+      "tc_no": "78901234567",
+      "name": "Hasan",
+      "mid_name": "Basri",
+      "surname": "Yıldız",
+      "personal_mail": null,
+      "gender": "Erkek",
+      "registr_no": 150001007
+    },
+    {
+      "tc_no": "89012345678",
+      "name": "Elif",
+      "mid_name": null,
+      "surname": "Türk",
+      "personal_mail": "elif.turk@gmail.com",
+      "gender": "Kadın",
+      "registr_no": 150001008
+    }
+  ],
+  "personel": [
+    {
+      "registr_no": 150001001,
+      "itu_mail": "yilmaza@itu.edu.tr",
+      "department": "Bilgisayar Mühendisliği",
+      "registration_date": "2020-09-01",
+      "status": "Aktif"
+    },
+    {
+      "registr_no": 150001002,
+      "itu_mail": "demira@itu.edu.tr",
+      "department": "Bilgisayar Mühendisliği",
+      "registration_date": "2018-03-15",
+      "status": "Aktif"
+    },
+    {
+      "registr_no": 150001003,
+      "itu_mail": "kayam@itu.edu.tr",
+      "department": "Bilişim Sistemleri Mühendisliği",
+      "registration_date": "2015-10-01",
+      "status": "Aktif"
+    },
+    {
+      "registr_no": 150001004,
+      "itu_mail": "sahinf@itu.edu.tr",
+      "department": "Bilgisayar Mühendisliği",
+      "registration_date": "2010-09-20",
+      "status": "Aktif"
+    },
+    {
+      "registr_no": 150001005,
+      "itu_mail": "ozkana@itu.edu.tr",
+      "department": "İdari Personel",
+      "registration_date": "2012-06-01",
+      "status": "Aktif"
+    },
+    {
+      "registr_no": 150001006,
+      "itu_mail": "arslanz@itu.edu.tr",
+      "department": "Bilişim Sistemleri Mühendisliği",
+      "registration_date": "2019-02-15",
+      "status": "Aktif"
+    },
+    {
+      "registr_no": 150001007,
+      "itu_mail": "yildizh@itu.edu.tr",
+      "department": "Bilgisayar Mühendisliği",
+      "registration_date": "2008-09-01",
+      "status": "Aktif"
+    },
+    {
+      "registr_no": 150001008,
+      "itu_mail": "turke@itu.edu.tr",
+      "department": "Bilişim Sistemleri Mühendisliği",
+      "registration_date": "2005-10-01",
+      "status": "Aktif"
+    }
+  ],
+  "academicPersonel": [
+    {
+      "registr_no": 150001001,
+      "duty_type": "LOW_ACADEMIC"
+    },
+    {
+      "registr_no": 150001002,
+      "duty_type": "LOW_ACADEMIC"
+    },
+    {
+      "registr_no": 150001003,
+      "duty_type": "HIGH_ACADEMIC"
+    },
+    {
+      "registr_no": 150001004,
+      "duty_type": "HIGH_ACADEMIC"
+    },
+    {
+      "registr_no": 150001006,
+      "duty_type": "LOW_ACADEMIC"
+    },
+    {
+      "registr_no": 150001007,
+      "duty_type": "HIGH_ACADEMIC"
+    },
+    {
+      "registr_no": 150001008,
+      "duty_type": "HIGH_ACADEMIC"
+    }
+  ],
+  "managementStaff": [
+    {
+      "registr_no": 150001005,
+      "title": "Şef"
+    }
+  ],
+  "systemAdmin": [
+    {
+      "registr_no": 150001005,
+      "user_name": "admin",
+      "encrypted_password": "hashed_password_here"
+    }
+  ],
+  "languageCompensation": [
+    {
+      "lang_comp_id": 1,
+      "letter_score": "A"
+    },
+    {
+      "lang_comp_id": 2,
+      "letter_score": "B"
+    },
+    {
+      "lang_comp_id": 3,
+      "letter_score": "C"
+    }
+  ],
+  "personelLanguageScores": [
+    {
+      "registr_no": 150001001,
+      "date": "2020-09-15",
+      "lang_comp_id": 2
+    },
+    {
+      "registr_no": 150001002,
+      "date": "2018-04-20",
+      "lang_comp_id": 1
+    },
+    {
+      "registr_no": 150001003,
+      "date": "2016-05-10",
+      "lang_comp_id": 2
+    },
+    {
+      "registr_no": 150001002,
+      "date": "2023-04-20",
+      "lang_comp_id": 2
+    }
+  ],
+  "highAcademicScores": [
+    {
+      "registr_no": 150001003,
+      "score_date": "2015-10-01",
+      "score_type": "İlk Atama (3 yıl)"
+    },
+    {
+      "registr_no": 150001003,
+      "score_date": "2018-10-01",
+      "score_type": "Uzatma (4 yıl)"
+    },
+    {
+      "registr_no": 150001004,
+      "score_date": "2010-09-20",
+      "score_type": "İlk Atama"
+    },
+    {
+      "registr_no": 150001004,
+      "score_date": "2013-09-20",
+      "score_type": "3. Yıl Tazminatı"
+    },
+    {
+      "registr_no": 150001007,
+      "score_date": "2008-09-01",
+      "score_type": "Doçent İlk Atama"
+    },
+    {
+      "registr_no": 150001008,
+      "score_date": "2005-10-01",
+      "score_type": "Profesör İlk Atama"
+    },
+    {
+      "registr_no": 150001008,
+      "score_date": "2008-10-01",
+      "score_type": "Profesör 3. Yıl Tazminatı"
+    },
+    {
+      "registr_no": 150001008,
+      "score_date": "2009-10-01",
+      "score_type": "Profesör 4. Yıl Tazminatı"
+    }
+  ],
+  "lowAcademic": [
+    {
+      "registr_no": 150001001,
+      "last_duty_ext_date": "2024-09-01",
+      "appointment_clause": "50d",
+      "degree_level": "Doktora"
+    },
+    {
+      "registr_no": 150001002,
+      "last_duty_ext_date": "2026-03-15",
+      "appointment_clause": "33a",
+      "degree_level": "Yüksek Lisans"
+    },
+    {
+      "registr_no": 150001006,
+      "last_duty_ext_date": "2027-02-15",
+      "appointment_clause": null,
+      "degree_level": null
+    }
+  ],
+  "lowAcademicExtensions": [
+    {
+      "registr_no": 150001001,
+      "ext_date": "2020-09-01",
+      "next_ext_date": "2024-09-01"
+    },
+    {
+      "registr_no": 150001001,
+      "ext_date": "2024-09-01",
+      "next_ext_date": "2030-09-01"
+    },
+    {
+      "registr_no": 150001002,
+      "ext_date": "2018-03-15",
+      "next_ext_date": "2021-03-15"
+    },
+    {
+      "registr_no": 150001002,
+      "ext_date": "2021-03-15",
+      "next_ext_date": "2023-03-15"
+    },
+    {
+      "registr_no": 150001002,
+      "ext_date": "2023-03-15",
+      "next_ext_date": "2026-03-15"
+    },
+    {
+      "registr_no": 150001006,
+      "ext_date": "2019-02-15",
+      "next_ext_date": "2021-02-15"
+    },
+    {
+      "registr_no": 150001006,
+      "ext_date": "2021-02-15",
+      "next_ext_date": "2023-02-15"
+    },
+    {
+      "registr_no": 150001006,
+      "ext_date": "2023-02-15",
+      "next_ext_date": "2025-02-15"
+    },
+    {
+      "registr_no": 150001006,
+      "ext_date": "2025-02-15",
+      "next_ext_date": "2027-02-15"
+    }
+  ],
+  "promotions": [
+    {
+      "prom_id": 1,
+      "date": "2013-01-15",
+      "next_date": "2021-01-15",
+      "description": "Yönetici Görev Terfi"
+    },
+    {
+      "prom_id": 2,
+      "date": "2021-01-15",
+      "next_date": "2029-01-15",
+      "description": "Yönetici Görev Terfi - 2. Dönem"
+    }
+  ],
+  "managementPromotions": [
+    {
+      "registr_no": 150001005,
+      "prom_id": 1
+    },
+    {
+      "registr_no": 150001005,
+      "prom_id": 2
+    }
+  ]
+}

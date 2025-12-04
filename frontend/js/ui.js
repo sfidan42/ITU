@@ -1,441 +1,414 @@
-// ui.js - UI Components and Rendering
+// ui.js - UI Rendering and Display Module
 
-class UI {
-    
-    // Show alert notification
-    static showAlert(message, type = 'info') {
-        const alert = document.getElementById('alert');
-        alert.textContent = message;
-        alert.className = `alert ${type}`;
-        alert.style.display = 'block';
-        
-        setTimeout(() => {
-            alert.style.display = 'none';
-        }, 4000);
+class PersonnelUI {
+    constructor(storage) {
+        this.storage = storage;
+        this.currentView = 'all';
+        this.searchTerm = '';
+        this.departmentFilter = '';
+        this.statusFilter = '';
     }
 
-    // Create person card
-    static createPersonCard(personData) {
-        const card = document.createElement('div');
-        card.className = 'card';
-        card.dataset.tcNo = personData.tc_no;
-        
-        const genderBadge = personData.gender ? 
-            `<span class="badge ${personData.gender === 'Erkek' || personData.gender === 'E' ? 'badge-male' : 'badge-female'}">
-                ${personData.gender}
-            </span>` : '';
-        
-        card.innerHTML = `
-            <div class="card-header">
-                <div>
-                    <div class="card-title">${personData.name} ${personData.mid_name || ''} ${personData.surname}</div>
-                    <div class="card-subtitle">Sicil No: ${personData.registr_no} | TC: ${personData.tc_no}</div>
-                </div>
-                <div class="card-actions">
-                    <button class="btn-icon btn-edit" onclick="app.editPerson('${personData.tc_no}')">✏️</button>
-                    <button class="btn-icon btn-delete" onclick="app.deletePerson('${personData.tc_no}')">🗑️</button>
-                </div>
-            </div>
-            <div class="card-body">
-                ${personData.personal_mail ? `
-                    <div class="info-row">
-                        <span class="info-label">Email:</span>
-                        <span class="info-value">${personData.personal_mail}</span>
-                    </div>
-                ` : ''}
-                ${personData.gender ? `
-                    <div class="info-row">
-                        <span class="info-label">Cinsiyet:</span>
-                        <span class="info-value">${genderBadge}</span>
-                    </div>
-                ` : ''}
-            </div>
-        `;
-        
-        return card;
+    init() {
+        this.setupEventListeners();
+        this.render();
     }
 
-    // Create academic staff card
-    static createAcademicCard(academicData) {
-        const card = document.createElement('div');
-        card.className = 'card';
-        card.dataset.registrNo = academicData.registr_no;
-        
-        const person = academicData.person;
-        const statusBadge = academicData.personel?.status === 'Aktif' ? 
-            '<span class="badge badge-active">Aktif</span>' : 
-            '<span class="badge badge-inactive">Pasif</span>';
-        
-        let cardHTML = `
-            <div class="card-header">
-                <div>
-                    <div class="card-title">${person?.name || ''} ${person?.surname || ''}</div>
-                    <div class="card-subtitle">${academicData.duty_type.replace(/_/g, ' ')} | Sicil: ${academicData.registr_no}</div>
-                </div>
-                <div class="card-actions">
-                    <button class="btn-icon btn-edit" onclick="app.editAcademic(${academicData.registr_no})">✏️</button>
-                    <button class="btn-icon btn-delete" onclick="app.deleteAcademic(${academicData.registr_no})">🗑️</button>
-                </div>
-            </div>
-            <div class="card-body">
-                <div class="info-row">
-                    <span class="info-label">Durum:</span>
-                    <span class="info-value">${statusBadge}</span>
-                </div>
-                <div class="info-row">
-                    <span class="info-label">İTÜ Email:</span>
-                    <span class="info-value">${academicData.personel?.itu_mail || 'N/A'}</span>
-                </div>
-                <div class="info-row">
-                    <span class="info-label">Bölüm:</span>
-                    <span class="info-value">${academicData.personel?.department || 'N/A'}</span>
-                </div>
-                <div class="info-row">
-                    <span class="info-label">Kayıt Tarihi:</span>
-                    <span class="info-value">${academicData.personel?.registration_date || 'N/A'}</span>
-                </div>
-        `;
+    setupEventListeners() {
+        // Tab navigation
+        document.querySelectorAll('.tab-button').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                document.querySelectorAll('.tab-button').forEach(b => b.classList.remove('active'));
+                e.target.classList.add('active');
+                this.currentView = e.target.dataset.view;
+                this.render();
+            });
+        });
 
-        // --- Specific Info based on Duty Type ---
-        if (academicData.duty_type === 'Araştırma_Görevlisi') {
-            const appType = academicData.appointment_type || 'Belirtilmemiş';
-            const eduLevel = academicData.education_level === 'master' ? 'Yüksek Lisans' : 
-                             academicData.education_level === 'phd' ? 'Doktora' : 'Belirtilmemiş';
-            
-            cardHTML += `
-                <div class="info-row" style="background-color: #f0f7ff;">
-                    <span class="info-label">Atanma Maddesi:</span>
-                    <span class="info-value">${appType}</span>
-                </div>
-                <div class="info-row" style="background-color: #f0f7ff;">
-                    <span class="info-label">Eğitim Düzeyi:</span>
-                    <span class="info-value">${eduLevel}</span>
-                </div>
-            `;
-
-            // Calculate extension info if 50d
-            if (appType === '50d' && academicData.personel?.registration_date) {
-                const regDate = new Date(academicData.personel.registration_date);
-                const today = new Date();
-                const yearsServed = (today - regDate) / (1000 * 60 * 60 * 24 * 365.25);
-                const extInfo = BusinessLogic.calculateResearchAssistantExtension('50d', academicData.education_level, yearsServed);
-                
-                cardHTML += `
-                    <div class="info-row" style="background-color: #fff3cd;">
-                        <span class="info-label">Görev Uzatımı:</span>
-                        <span class="info-value">${extInfo.message}</span>
-                    </div>
-                `;
-            }
-        } else if (academicData.duty_type === 'Profesör') {
-            if (academicData.personel?.registration_date) {
-                const regDate = new Date(academicData.personel.registration_date);
-                const today = new Date();
-                const yearsServed = (today - regDate) / (1000 * 60 * 60 * 24 * 365.25);
-                const scores = BusinessLogic.calculateProfessorScores(yearsServed);
-                
-                cardHTML += `
-                    <div class="expandable-section">
-                        <div class="expandable-header" onclick="this.nextElementSibling.classList.toggle('expanded')">
-                            <span>🎓 Profesörlük Hakları (${Math.floor(yearsServed)} Yıl)</span>
-                            <span>▼</span>
-                        </div>
-                        <div class="expandable-content">
-                            <div class="info-row"><span class="info-label">Makam Tazminatı:</span><span class="info-value">${scores.makam_tazminati}</span></div>
-                            <div class="info-row"><span class="info-label">Üniversite Ödeneği:</span><span class="info-value">${scores.universite_odenegi}</span></div>
-                            <div class="info-row"><span class="info-label">Ek Gösterge:</span><span class="info-value">${scores.ek_gosterge}</span></div>
-                        </div>
-                    </div>
-                `;
-            }
+        // Search
+        const searchInput = document.getElementById('searchInput');
+        if (searchInput) {
+            searchInput.addEventListener('input', (e) => {
+                this.searchTerm = e.target.value.toLowerCase();
+                this.render();
+            });
         }
 
-        cardHTML += `</div>`; // Close card-body
-        
-        // High Academic Scores
-        if (academicData.high_scores && academicData.high_scores.length > 0) {
-            cardHTML += `
-                <div class="expandable-section">
-                    <div class="expandable-header" onclick="this.nextElementSibling.classList.toggle('expanded')">
-                        <span>📊 Akademik Puanlar (${academicData.high_scores.length})</span>
-                        <span>▼</span>
-                    </div>
-                    <div class="expandable-content">
-                        <div class="json-display">
-                            <pre>${JSON.stringify(academicData.high_scores, null, 2)}</pre>
-                        </div>
-                    </div>
-                </div>
-            `;
-        }
-        
-        // Duty Extensions (for low academic)
-        if (academicData.duty_extensions && academicData.duty_extensions.length > 0) {
-            cardHTML += `
-                <div class="expandable-section">
-                    <div class="expandable-header" onclick="this.nextElementSibling.classList.toggle('expanded')">
-                        <span>📅 Görev Uzatmaları (${academicData.duty_extensions.length})</span>
-                        <span>▼</span>
-                    </div>
-                    <div class="expandable-content">
-                        <div class="json-display">
-                            <pre>${JSON.stringify(academicData.duty_extensions, null, 2)}</pre>
-                        </div>
-                    </div>
-                </div>
-            `;
+        // Department filter
+        const deptFilter = document.getElementById('departmentFilter');
+        if (deptFilter) {
+            deptFilter.addEventListener('change', (e) => {
+                this.departmentFilter = e.target.value;
+                this.render();
+            });
         }
 
-        // Language Scores
-        if (academicData.language_scores && academicData.language_scores.length > 0) {
-            const langItems = academicData.language_scores.map(score => {
-                const validity = BusinessLogic.checkLanguageScoreValidity(score.date);
-                const style = validity.valid ? 'color: green;' : 'color: red; text-decoration: line-through;';
-                const icon = validity.valid ? '✅' : '⚠️';
-                return `
-                    <div class="info-row">
-                        <span class="info-label">${score.language} (${score.date}):</span>
-                        <span class="info-value" style="${style}">${score.score} ${icon} <small>${validity.message}</small></span>
-                    </div>
-                `;
-            }).join('');
-
-            cardHTML += `
-                <div class="expandable-section">
-                    <div class="expandable-header" onclick="this.nextElementSibling.classList.toggle('expanded')">
-                        <span>🗣️ Dil Tazminatı (${academicData.language_scores.length})</span>
-                        <span>▼</span>
-                    </div>
-                    <div class="expandable-content">
-                        ${langItems}
-                    </div>
-                </div>
-            `;
+        // Status filter
+        const statusFilter = document.getElementById('statusFilter');
+        if (statusFilter) {
+            statusFilter.addEventListener('change', (e) => {
+                this.statusFilter = e.target.value;
+                this.render();
+            });
         }
-        
-        card.innerHTML = cardHTML;
-        return card;
     }
 
-    // Create administrative staff card
-    static createAdministrativeCard(adminData) {
-        const card = document.createElement('div');
-        card.className = 'card';
-        card.dataset.registrNo = adminData.registr_no;
-        
-        const person = adminData.person;
-        const statusBadge = adminData.status === 'Aktif' ? 
-            '<span class="badge badge-active">Aktif</span>' : 
-            '<span class="badge badge-inactive">Pasif</span>';
-        
-        // Calculate next promotion date
-        let nextPromotionInfo = '';
-        if (adminData.registration_date) {
-            const nextPromDate = BusinessLogic.calculateNextPromotion(adminData.registration_date);
-            nextPromotionInfo = `
-                <div class="info-row" style="background-color: #e8f5e9;">
-                    <span class="info-label">Sonraki Terfi:</span>
-                    <span class="info-value">${nextPromDate.toLocaleDateString('tr-TR')}</span>
-                </div>
-            `;
-        }
-
-        let cardHTML = `
-            <div class="card-header">
-                <div>
-                    <div class="card-title">${person?.name || ''} ${person?.surname || ''}</div>
-                    <div class="card-subtitle">İdari Personel | Sicil: ${adminData.registr_no}</div>
-                </div>
-                <div class="card-actions">
-                    <button class="btn-icon btn-edit" onclick="app.editAdministrative(${adminData.registr_no})">✏️</button>
-                    <button class="btn-icon btn-delete" onclick="app.deleteAdministrative(${adminData.registr_no})">🗑️</button>
-                </div>
-            </div>
-            <div class="card-body">
-                <div class="info-row">
-                    <span class="info-label">Durum:</span>
-                    <span class="info-value">${statusBadge}</span>
-                </div>
-                <div class="info-row">
-                    <span class="info-label">İTÜ Email:</span>
-                    <span class="info-value">${adminData.itu_mail || 'N/A'}</span>
-                </div>
-                <div class="info-row">
-                    <span class="info-label">Bölüm:</span>
-                    <span class="info-value">${adminData.department || 'N/A'}</span>
-                </div>
-                <div class="info-row">
-                    <span class="info-label">Kayıt Tarihi:</span>
-                    <span class="info-value">${adminData.registration_date || 'N/A'}</span>
-                </div>
-                ${nextPromotionInfo}
-            </div>
-        `;
-        
-        // Management staff info with promotions
-        if (adminData.management_staff) {
-            const mgmt = adminData.management_staff;
-            cardHTML += `
-                <div class="expandable-section">
-                    <div class="expandable-header" onclick="this.nextElementSibling.classList.toggle('expanded')">
-                        <span>👔 Yönetim Kadrosu - ${mgmt.title}</span>
-                        <span>▼</span>
-                    </div>
-                    <div class="expandable-content">
-                        ${mgmt.promotions && mgmt.promotions.length > 0 ? `
-                            <div class="json-display">
-                                <pre>${JSON.stringify(mgmt.promotions, null, 2)}</pre>
-                            </div>
-                        ` : '<p style="padding: 10px; color: #999;">Terfi kaydı bulunmamaktadır.</p>'}
-                    </div>
-                </div>
-            `;
-        }
-
-        // Language Scores
-        if (adminData.language_scores && adminData.language_scores.length > 0) {
-            cardHTML += `
-                <div class="expandable-section">
-                    <div class="expandable-header" onclick="this.nextElementSibling.classList.toggle('expanded')">
-                        <span>🗣️ Dil Tazminatı (${adminData.language_scores.length})</span>
-                        <span>▼</span>
-                    </div>
-                    <div class="expandable-content">
-                        <div class="json-display">
-                            <pre>${JSON.stringify(adminData.language_scores, null, 2)}</pre>
-                        </div>
-                    </div>
-                </div>
-            `;
-        }
-        
-        card.innerHTML = cardHTML;
-        return card;
-    }
-
-    // Create system admin card
-    static createSystemAdminCard(adminData) {
-        const card = document.createElement('div');
-        card.className = 'card';
-        card.dataset.registrNo = adminData.registr_no;
-        
-        const person = adminData.person;
-        
-        card.innerHTML = `
-            <div class="card-header">
-                <div>
-                    <div class="card-title">${person?.name || ''} ${person?.surname || ''}</div>
-                    <div class="card-subtitle">Sistem Yöneticisi | Sicil: ${adminData.registr_no}</div>
-                </div>
-                <div class="card-actions">
-                    <button class="btn-icon btn-edit" onclick="app.editSystemAdmin(${adminData.registr_no})">✏️</button>
-                    <button class="btn-icon btn-delete" onclick="app.deleteSystemAdmin(${adminData.registr_no})">🗑️</button>
-                </div>
-            </div>
-            <div class="card-body">
-                <div class="info-row">
-                    <span class="info-label">Kullanıcı Adı:</span>
-                    <span class="info-value">${adminData.user_name}</span>
-                </div>
-                <div class="info-row">
-                    <span class="info-label">İTÜ Email:</span>
-                    <span class="info-value">${adminData.personel?.itu_mail || 'N/A'}</span>
-                </div>
-                <div class="info-row">
-                    <span class="info-label">Bölüm:</span>
-                    <span class="info-value">${adminData.personel?.department || 'N/A'}</span>
-                </div>
-            </div>
-        `;
-        
-        return card;
-    }
-
-    // Render empty state
-    static renderEmptyState(container, message = 'Kayıt bulunamadı') {
-        container.innerHTML = `
-            <div class="empty-state">
-                <div class="empty-state-icon">📭</div>
-                <div class="empty-state-text">${message}</div>
-            </div>
-        `;
-    }
-
-    // Create form field
-    static createFormField(config) {
-        const { name, label, type = 'text', required = false, options = null, value = '' } = config;
-        
-        let inputHTML = '';
-        
-        if (type === 'select' && options) {
-            inputHTML = `
-                <select id="${name}" name="${name}" ${required ? 'required' : ''}>
-                    <option value="">Seçiniz...</option>
-                    ${options.map(opt => `
-                        <option value="${opt.value}" ${value === opt.value ? 'selected' : ''}>
-                            ${opt.label}
-                        </option>
-                    `).join('')}
-                </select>
-            `;
-        } else if (type === 'textarea') {
-            inputHTML = `
-                <textarea id="${name}" name="${name}" rows="3" ${required ? 'required' : ''}>${value}</textarea>
-            `;
+    render() {
+        // Only show statistics on "all" view
+        if (this.currentView === 'all') {
+            this.renderStatistics();
+            document.getElementById('statsContainer').style.display = 'grid';
         } else {
-            inputHTML = `
-                <input type="${type}" id="${name}" name="${name}" value="${value}" ${required ? 'required' : ''}>
-            `;
+            document.getElementById('statsContainer').style.display = 'none';
         }
         
-        return `
-            <div class="form-group">
-                <label for="${name}">
-                    ${label}
-                    ${required ? '<span style="color: red;">*</span>' : ''}
-                </label>
-                ${inputHTML}
-                <div class="error-message" id="${name}-error"></div>
+        this.renderDepartmentFilter();
+        this.renderPersonnelCards();
+    }
+
+    renderStatistics() {
+        const stats = this.calculateStatistics();
+        const container = document.getElementById('statsContainer');
+        
+        container.innerHTML = `
+            <div class="stat-card blue">
+                <h3>Toplam Personel</h3>
+                <div class="stat-value">${stats.total}</div>
+            </div>
+            <div class="stat-card green">
+                <h3>Araştırma Görevlisi</h3>
+                <div class="stat-value">${stats.arastirmaGorevlisi}</div>
+            </div>
+            <div class="stat-card orange">
+                <h3>Öğretim Görevlisi</h3>
+                <div class="stat-value">${stats.ogretimGorevlisi}</div>
+            </div>
+            <div class="stat-card purple">
+                <h3>Dr. Öğretim Üyesi</h3>
+                <div class="stat-value">${stats.drOgretimUyesi}</div>
+            </div>
+            <div class="stat-card blue">
+                <h3>Doçent</h3>
+                <div class="stat-value">${stats.docent}</div>
+            </div>
+            <div class="stat-card green">
+                <h3>Profesör</h3>
+                <div class="stat-value">${stats.profesor}</div>
+            </div>
+            <div class="stat-card orange">
+                <h3>İdari Personel</h3>
+                <div class="stat-value">${stats.idari}</div>
             </div>
         `;
     }
 
-    // Show modal
-    static showModal(title, content) {
-        const modal = document.getElementById('modal');
-        const modalTitle = document.getElementById('modalTitle');
-        const modalBody = document.getElementById('modalBody');
+    calculateStatistics() {
+        const personnelList = this.getFilteredPersonnel();
+        const allPersonnel = this.getAllPersonnel();
         
-        modalTitle.textContent = title;
-        modalBody.innerHTML = content;
-        modal.style.display = 'block';
+        return {
+            total: allPersonnel.length,
+            arastirmaGorevlisi: allPersonnel.filter(p => p.position === 'Araştırma Görevlisi').length,
+            ogretimGorevlisi: allPersonnel.filter(p => p.position === 'Öğretim Görevlisi').length,
+            drOgretimUyesi: allPersonnel.filter(p => p.position === 'Dr. Öğretim Üyesi').length,
+            docent: allPersonnel.filter(p => p.position === 'Doçent').length,
+            profesor: allPersonnel.filter(p => p.position === 'Profesör').length,
+            idari: allPersonnel.filter(p => p.position === 'İdari Personel' || !p.isAcademic).length
+        };
     }
 
-    // Hide modal
-    static hideModal() {
-        document.getElementById('modal').style.display = 'none';
-    }
+    renderDepartmentFilter() {
+        const deptFilter = document.getElementById('departmentFilter');
+        if (!deptFilter) return;
 
-    // Display validation errors
-    static displayErrors(errors) {
-        // Clear previous errors
-        document.querySelectorAll('.error-message').forEach(el => el.textContent = '');
-        document.querySelectorAll('.error').forEach(el => el.classList.remove('error'));
+        // Get unique departments
+        const departments = new Set();
+        this.storage.data.personel.forEach(p => {
+            if (p.department) departments.add(p.department);
+        });
+
+        // Keep current selection
+        const currentValue = deptFilter.value;
         
-        // Display new errors
-        Object.keys(errors).forEach(fieldName => {
-            const errorEl = document.getElementById(`${fieldName}-error`);
-            const inputEl = document.getElementById(fieldName);
-            
-            if (errorEl) {
-                errorEl.textContent = errors[fieldName];
-            }
-            if (inputEl) {
-                inputEl.classList.add('error');
-            }
+        deptFilter.innerHTML = '<option value="">Tüm Bölümler</option>';
+        Array.from(departments).sort().forEach(dept => {
+            const option = document.createElement('option');
+            option.value = dept;
+            option.textContent = dept;
+            if (dept === currentValue) option.selected = true;
+            deptFilter.appendChild(option);
         });
     }
-}
 
-// Export for use in other modules
-window.UI = UI;
+    renderPersonnelCards() {
+        const container = document.getElementById('cardsContainer');
+        const emptyState = document.getElementById('emptyState');
+        const personnelList = this.getFilteredPersonnel();
+
+        console.log('Rendering cards:', personnelList.length, 'personnel');
+        console.log('Current view:', this.currentView);
+        
+        if (personnelList.length === 0) {
+            container.style.display = 'none';
+            emptyState.style.display = 'block';
+            return;
+        }
+
+        container.style.display = 'grid';
+        emptyState.style.display = 'none';
+        
+        container.innerHTML = personnelList.map(p => this.createPersonnelCard(p)).join('');
+    }
+
+    getFilteredPersonnel() {
+        const allPersonnel = this.getAllPersonnel();
+        
+        return allPersonnel.filter(p => {
+            // View filter
+            if (this.currentView !== 'all') {
+                const viewMap = {
+                    'arastirma-gorevlisi': 'Araştırma Görevlisi',
+                    'ogretim-gorevlisi': 'Öğretim Görevlisi',
+                    'dr-ogretim-uyesi': 'Dr. Öğretim Üyesi',
+                    'docent': 'Doçent',
+                    'profesor': 'Profesör',
+                    'idari': 'İdari Personel'
+                };
+                if (p.position !== viewMap[this.currentView]) return false;
+            }
+
+            // Search filter
+            if (this.searchTerm) {
+                const searchFields = [
+                    p.fullName,
+                    p.tcNo,
+                    p.registrNo?.toString(),
+                    p.ituMail
+                ].filter(Boolean).join(' ').toLowerCase();
+                
+                if (!searchFields.includes(this.searchTerm)) return false;
+            }
+
+            // Department filter
+            if (this.departmentFilter && p.department !== this.departmentFilter) {
+                return false;
+            }
+
+            // Status filter
+            if (this.statusFilter && p.status !== this.statusFilter) {
+                return false;
+            }
+
+            return true;
+        });
+    }
+
+    getAllPersonnel() {
+        const result = [];
+        
+        this.storage.data.persons.forEach(person => {
+            const personnel = this.storage.data.personel.find(p => p.registr_no === person.registr_no);
+            if (!personnel) return;
+
+            const academic = this.storage.data.academicPersonel.find(a => a.registr_no === person.registr_no);
+            const management = this.storage.data.managementStaff.find(m => m.registr_no === person.registr_no);
+            
+            const fullName = [person.name, person.mid_name, person.surname].filter(Boolean).join(' ');
+            
+            let position = 'İdari Personel';
+            let positionType = 'idari';
+            let isAcademic = false;
+            let details = {};
+
+            if (academic) {
+                isAcademic = true;
+                if (academic.duty_type === 'LOW_ACADEMIC') {
+                    const lowAc = this.storage.data.lowAcademic.find(la => la.registr_no === person.registr_no);
+                    
+                    // Determine if Araştırma Görevlisi or Öğretim Görevlisi
+                    // Based on appointment_clause
+                    if (lowAc?.appointment_clause) {
+                        position = 'Araştırma Görevlisi';
+                        positionType = 'arastirma';
+                        details = {
+                            appointmentClause: lowAc.appointment_clause,
+                            degreeLevel: lowAc.degree_level,
+                            lastDutyExtDate: lowAc.last_duty_ext_date
+                        };
+                    } else {
+                        position = 'Öğretim Görevlisi';
+                        positionType = 'ogretim';
+                        details = {
+                            lastDutyExtDate: lowAc?.last_duty_ext_date
+                        };
+                    }
+                } else if (academic.duty_type === 'HIGH_ACADEMIC') {
+                    const scores = this.storage.data.highAcademicScores.filter(s => s.registr_no === person.registr_no);
+                    
+                    // Determine position from score types
+                    if (scores.some(s => s.score_type?.toLowerCase().includes('profesör'))) {
+                        position = 'Profesör';
+                        positionType = 'profesor';
+                    } else if (scores.some(s => s.score_type?.toLowerCase().includes('doçent'))) {
+                        position = 'Doçent';
+                        positionType = 'docent';
+                    } else {
+                        position = 'Dr. Öğretim Üyesi';
+                        positionType = 'dr-ogretim';
+                    }
+                    
+                    details = {
+                        scores: scores
+                    };
+                }
+            } else if (management) {
+                position = 'İdari Personel';
+                positionType = 'idari';
+                details = {
+                    title: management.title
+                };
+            }
+
+            // Get language scores
+            const langScores = this.storage.data.personelLanguageScores
+                .filter(ls => ls.registr_no === person.registr_no)
+                .map(ls => {
+                    const comp = this.storage.data.languageCompensation.find(lc => lc.lang_comp_id === ls.lang_comp_id);
+                    return {
+                        date: ls.date,
+                        score: comp?.letter_score || 'N/A'
+                    };
+                })
+                .sort((a, b) => new Date(b.date) - new Date(a.date));
+
+            result.push({
+                tcNo: person.tc_no,
+                registrNo: person.registr_no,
+                fullName,
+                name: person.name,
+                midName: person.mid_name,
+                surname: person.surname,
+                personalMail: person.personal_mail,
+                gender: person.gender,
+                ituMail: personnel.itu_mail,
+                department: personnel.department,
+                registrationDate: personnel.registration_date,
+                status: personnel.status,
+                position,
+                positionType,
+                isAcademic,
+                details,
+                langScores
+            });
+        });
+
+        return result;
+    }
+
+    createPersonnelCard(person) {
+        const badgeClass = `badge-${person.positionType}`;
+        const statusBadge = person.status === 'Aktif' ? 'badge-aktif' : 'badge-pasif';
+        
+        let detailsHTML = '';
+        
+        if (person.details.appointmentClause) {
+            detailsHTML += `
+                <div class="info-row">
+                    <span class="info-label">Atanma Maddesi:</span>
+                    <span class="info-value">${person.details.appointmentClause}</span>
+                </div>
+            `;
+        }
+        
+        if (person.details.degreeLevel) {
+            detailsHTML += `
+                <div class="info-row">
+                    <span class="info-label">Eğitim Seviyesi:</span>
+                    <span class="info-value">${person.details.degreeLevel}</span>
+                </div>
+            `;
+        }
+        
+        if (person.details.lastDutyExtDate) {
+            detailsHTML += `
+                <div class="info-row">
+                    <span class="info-label">Son Uzatma Tarihi:</span>
+                    <span class="info-value">${person.details.lastDutyExtDate}</span>
+                </div>
+            `;
+        }
+
+        if (person.details.scores && person.details.scores.length > 0) {
+            const latestScore = person.details.scores[0];
+            detailsHTML += `
+                <div class="info-row">
+                    <span class="info-label">Son Atama/Terfİ:</span>
+                    <span class="info-value">${latestScore.score_type} (${latestScore.score_date})</span>
+                </div>
+            `;
+        }
+        
+        if (person.details.title) {
+            detailsHTML += `
+                <div class="info-row">
+                    <span class="info-label">Unvan:</span>
+                    <span class="info-value">${person.details.title}</span>
+                </div>
+            `;
+        }
+
+        const langTagsHTML = person.langScores.length > 0 
+            ? person.langScores.map(ls => 
+                `<span class="tag lang-${ls.score.toLowerCase()}">🌐 Yabancı Dil: ${ls.score} (${ls.date})</span>`
+            ).join('')
+            : '';
+
+        return `
+            <div class="personnel-card">
+                <div class="card-header">
+                    <div class="card-title">
+                        <h3>${person.fullName}</h3>
+                        <div class="registr-no">Sicil No: ${person.registrNo}</div>
+                    </div>
+                    <div>
+                        <span class="card-badge ${badgeClass}">${person.position}</span>
+                    </div>
+                </div>
+                
+                <div class="card-body">
+                    <div class="info-row">
+                        <span class="info-label">TC Kimlik No:</span>
+                        <span class="info-value">${person.tcNo}</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">İTÜ Mail:</span>
+                        <span class="info-value">${person.ituMail}</span>
+                    </div>
+                    ${person.personalMail ? `
+                    <div class="info-row">
+                        <span class="info-label">Kişisel Mail:</span>
+                        <span class="info-value">${person.personalMail}</span>
+                    </div>
+                    ` : ''}
+                    <div class="info-row">
+                        <span class="info-label">Bölüm:</span>
+                        <span class="info-value">${person.department}</span>
+                    </div>
+                    ${person.registrationDate ? `
+                    <div class="info-row">
+                        <span class="info-label">Kayıt Tarihi:</span>
+                        <span class="info-value">${person.registrationDate}</span>
+                    </div>
+                    ` : ''}
+                    ${detailsHTML}
+                </div>
+                
+                <div class="card-footer">
+                    <span class="card-badge ${statusBadge}">${person.status}</span>
+                    ${person.gender ? `<span class="tag">${person.gender}</span>` : ''}
+                    ${langTagsHTML}
+                </div>
+            </div>
+        `;
+    }
+}

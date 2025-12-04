@@ -1,143 +1,196 @@
-// business_logic.js - Business Rules and Calculations
+// business_logic.js - Business Rules and Logic Module
 
 class BusinessLogic {
     
-    // --- Professor Logic ---
-    static calculateProfessorScores(yearsServed) {
-        let scores = {
-            makam_tazminati: 0,
-            universite_odenegi: 0,
-            ek_gosterge: 0
-        };
-
-        if (yearsServed >= 4) {
-            scores.makam_tazminati = 6000;
-            scores.universite_odenegi = 245;
-            scores.ek_gosterge = 7000;
-        } else if (yearsServed >= 3) {
-            scores.makam_tazminati = 4500;
-            scores.universite_odenegi = 215;
-            scores.ek_gosterge = 5800;
-        }
-
-        return scores;
-    }
-
-    // --- Research Assistant Logic ---
-    static calculateResearchAssistantExtension(type, educationLevel, yearsServed, scientificPrepYears = 0) {
-        // type: '33a' or '50d'
-        // educationLevel: 'master' or 'phd'
+    // Calculate next extension date for Araştırma Görevlisi
+    static calculateNextExtensionForResearchAssistant(currentDate, appointmentClause, degreeLevel) {
+        const current = new Date(currentDate);
         
-        if (type === '33a') {
-            return { canExtend: true, message: '33a maddesi uyarınca görev uzatımı yapılabilir.' };
+        if (appointmentClause === '33a') {
+            // 33a starts from course beginning date
+            return null; // No automatic extension
         }
-
-        if (type === '50d') {
-            const effectiveYears = yearsServed - scientificPrepYears;
-
-            if (educationLevel === 'master') {
-                // Max 3 years. 
-                if (effectiveYears < 3) {
-                    return { canExtend: true, duration: 1, unit: 'year', message: 'Yüksek lisans için 1 yıl uzatılabilir.' };
-                } else if (effectiveYears === 3) {
-                    return { canExtend: true, duration: 6, unit: 'month', message: 'Yüksek lisans süresi doldu. 6 ay ek süre verilebilir.' };
-                } else {
-                    return { canExtend: false, message: 'Yüksek lisans azami süresi (3 yıl + 6 ay) dolmuştur.' };
-                }
-            } else if (educationLevel === 'phd') {
-                // Max 6 years
-                if (effectiveYears < 6) {
-                    return { canExtend: true, duration: 1, unit: 'year', message: 'Doktora için 1 yıl uzatılabilir.' };
-                } else {
-                    return { canExtend: false, message: 'Doktora azami süresi (6 yıl) dolmuştur.' };
-                }
+        
+        if (appointmentClause === '50d') {
+            if (degreeLevel === 'Yüksek Lisans') {
+                // 3 years for Master's + optional 6 months
+                current.setFullYear(current.getFullYear() + 3);
+                return current.toISOString().split('T')[0];
+            } else if (degreeLevel === 'Doktora') {
+                // 6 years for PhD
+                current.setFullYear(current.getFullYear() + 6);
+                return current.toISOString().split('T')[0];
             }
         }
-
-        return { canExtend: false, message: 'Bilinmeyen durum.' };
+        
+        return null;
     }
-
-    // --- Language Score Logic ---
-    static checkLanguageScoreValidity(examDateStr) {
-        const examDate = new Date(examDateStr);
-        const today = new Date();
-        const diffTime = Math.abs(today - examDate);
-        const diffYears = diffTime / (1000 * 60 * 60 * 24 * 365.25);
-
-        if (diffYears > 5) {
-            return { valid: false, message: 'Dil puanı geçerlilik süresi (5 yıl) dolmuştur. Puan düşümü veya yeni belge gereklidir.' };
+    
+    // Calculate next extension date for Öğretim Görevlisi
+    static calculateNextExtensionForLecturer(currentDate, currentYear = new Date().getFullYear()) {
+        const current = new Date(currentDate);
+        
+        if (currentYear < 2026) {
+            // Before 2026: 1 year extension
+            current.setFullYear(current.getFullYear() + 1);
+        } else {
+            // From 2026 onwards: 2 year extension
+            current.setFullYear(current.getFullYear() + 2);
         }
-        return { valid: true, message: 'Dil puanı geçerli.' };
+        
+        return current.toISOString().split('T')[0];
     }
-
-    // --- Administrative Staff Logic ---
-    static calculateNextPromotion(registrationDateStr, lastPromotionDateStr = null) {
-        const startDate = new Date(lastPromotionDateStr || registrationDateStr);
-        const nextDate = new Date(startDate);
-        nextDate.setFullYear(nextDate.getFullYear() + 8);
-        return nextDate;
+    
+    // Calculate next appointment for Dr. Öğretim Üyesi
+    static calculateNextAppointmentForAssistantProfessor(initialDate, isFirstAppointment = true) {
+        const current = new Date(initialDate);
+        
+        if (isFirstAppointment) {
+            // First appointment: 3 years
+            current.setFullYear(current.getFullYear() + 3);
+        } else {
+            // Subsequent appointments: 4 years
+            current.setFullYear(current.getFullYear() + 4);
+        }
+        
+        return current.toISOString().split('T')[0];
     }
-
-    // --- Notification Generator ---
-    static generateNotifications(data) {
+    
+    // Calculate compensation for Profesör
+    static calculateProfessorCompensation(appointmentDate) {
+        const appointment = new Date(appointmentDate);
+        const now = new Date();
+        const yearsServed = (now - appointment) / (1000 * 60 * 60 * 24 * 365.25);
+        
+        const compensation = {
+            makamTazmini: 0,
+            universiteOdenegi: 0,
+            ekGosterge: 0
+        };
+        
+        if (yearsServed >= 3) {
+            compensation.makamTazmini = 4500;
+            compensation.universiteOdenegi = 215;
+            compensation.ekGosterge = 5900;
+        }
+        
+        if (yearsServed >= 4) {
+            compensation.universiteOdenegi = 245;
+            compensation.ekGosterge = 7000;
+        }
+        
+        if (yearsServed >= 5) {
+            compensation.makamTazmini = 6000;
+        }
+        
+        return compensation;
+    }
+    
+    // Calculate next promotion date for İdari Personel
+    static calculateNextPromotionForAdministrative(lastPromotionDate) {
+        const lastPromotion = new Date(lastPromotionDate);
+        // Every 8 years
+        lastPromotion.setFullYear(lastPromotion.getFullYear() + 8);
+        return lastPromotion.toISOString().split('T')[0];
+    }
+    
+    // Calculate next language compensation renewal date
+    static calculateNextLanguageRenewalDate(lastExamDate) {
+        const lastExam = new Date(lastExamDate);
+        // Every 5 years
+        lastExam.setFullYear(lastExam.getFullYear() + 5);
+        return lastExam.toISOString().split('T')[0];
+    }
+    
+    // Determine language score degradation
+    static degradeLanguageScore(currentScore) {
+        const scoreMap = { 'A': 'B', 'B': 'C', 'C': null };
+        return scoreMap[currentScore] || null;
+    }
+    
+    // Determine language score upgrade
+    static upgradeLanguageScore(currentScore, newScore) {
+        const scores = ['C', 'B', 'A'];
+        const currentIndex = scores.indexOf(currentScore);
+        const newIndex = scores.indexOf(newScore);
+        
+        if (newIndex > currentIndex) {
+            return newScore;
+        }
+        return currentScore;
+    }
+    
+    // Check if extension is needed (notification)
+    static needsExtensionNotification(extensionDate, notificationDaysBefore = 30) {
+        if (!extensionDate) return false;
+        
+        const extension = new Date(extensionDate);
+        const now = new Date();
+        const daysUntilExtension = (extension - now) / (1000 * 60 * 60 * 24);
+        
+        return daysUntilExtension <= notificationDaysBefore && daysUntilExtension >= 0;
+    }
+    
+    // Check if unpaid leave affects extension dates
+    static adjustExtensionForUnpaidLeave(originalExtensionDate, unpaidLeaveDays) {
+        const extension = new Date(originalExtensionDate);
+        extension.setDate(extension.getDate() + unpaidLeaveDays);
+        return extension.toISOString().split('T')[0];
+    }
+    
+    // Get position title from duty type and details
+    static getPositionTitle(dutyType, details = {}) {
+        if (dutyType === 'LOW_ACADEMIC') {
+            if (details.appointmentClause) {
+                return 'Araştırma Görevlisi';
+            }
+            return 'Öğretim Görevlisi';
+        }
+        
+        if (dutyType === 'HIGH_ACADEMIC') {
+            // This should be determined from scores or other data
+            // For now, return generic
+            return 'Öğretim Üyesi';
+        }
+        
+        return 'Personel';
+    }
+    
+    // Calculate years of service
+    static calculateYearsOfService(registrationDate) {
+        if (!registrationDate) return 0;
+        
+        const registration = new Date(registrationDate);
+        const now = new Date();
+        const years = (now - registration) / (1000 * 60 * 60 * 24 * 365.25);
+        
+        return Math.floor(years);
+    }
+    
+    // Get upcoming notifications
+    static getUpcomingNotifications(personnel, extensionDate, languageRenewalDate) {
         const notifications = [];
-        const today = new Date();
-        const oneMonthLater = new Date();
-        oneMonthLater.setMonth(today.getMonth() + 1);
-
-        // 1. Unpaid Leave Return
-        // Assuming 'leaves' array in personel object: [{ type: 'unpaid', start: '...', end: '...' }]
-        if (data.personel) {
-            data.personel.forEach(p => {
-                if (p.leaves) {
-                    p.leaves.forEach(leave => {
-                        if (leave.type === 'unpaid') {
-                            const returnDate = new Date(leave.end);
-                            if (returnDate > today && returnDate <= oneMonthLater) {
-                                const person = data.persons.find(per => per.registr_no === p.registr_no);
-                                notifications.push({
-                                    type: 'warning',
-                                    title: 'Ücretsiz İzin Dönüşü',
-                                    message: `${person ? person.name + ' ' + person.surname : p.registr_no} sicil nolu personelin ücretsiz izni ${leave.end} tarihinde bitiyor.`,
-                                    registr_no: p.registr_no
-                                });
-                            }
-                        }
-                    });
-                }
+        
+        if (this.needsExtensionNotification(extensionDate)) {
+            const daysLeft = Math.ceil((new Date(extensionDate) - new Date()) / (1000 * 60 * 60 * 24));
+            notifications.push({
+                type: 'extension',
+                message: `Görev süresi ${daysLeft} gün içinde dolacak`,
+                priority: 'high',
+                daysLeft
             });
         }
-
-        // 2. Language Score Expiry
-        if (data.personelLanguageScores) {
-            data.personelLanguageScores.forEach(score => {
-                const validity = this.checkLanguageScoreValidity(score.date);
-                if (!validity.valid) {
-                    notifications.push({
-                        type: 'info',
-                        title: 'Dil Puanı Süresi',
-                        message: `${score.name} isimli personelin ${score.date} tarihli dil puanının süresi dolmuştur.`,
-                        tc_no: score.tc_no
-                    });
-                }
+        
+        if (this.needsExtensionNotification(languageRenewalDate, 60)) {
+            const daysLeft = Math.ceil((new Date(languageRenewalDate) - new Date()) / (1000 * 60 * 60 * 24));
+            notifications.push({
+                type: 'language',
+                message: `Yabancı dil belgesi ${daysLeft} gün içinde yenilenmelidir`,
+                priority: 'medium',
+                daysLeft
             });
         }
-
-        // 3. Duty Extensions (Academic)
-        if (data.lowAcademic) {
-            data.lowAcademic.forEach(la => {
-                // Assuming last_duty_ext_date is the start of the current extension
-                // We need to know the duration to calculate end date. 
-                // For simplicity, let's assume standard 1 year if not specified, or check 'next_ext_date' if available in extensions table
-                // But here we might just check if last extension was long ago.
-                
-                // Better: Check 'duty_extensions' from storage if available, find the latest 'next_ext_date'
-                // This part requires access to the joined data structure or we iterate raw tables.
-            });
-        }
-
+        
         return notifications;
     }
 }
-
-window.BusinessLogic = BusinessLogic;
