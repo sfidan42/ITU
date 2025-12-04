@@ -1,0 +1,42 @@
+networks:
+  ozluk_net:
+
+services:
+  
+  database:
+    container_name: database
+    build: ./database
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    networks:
+      - ozluk_net
+    restart: always
+
+  backend:
+    container_name: backend
+    build: ./backend
+    volumes:
+      - ./backend:/app
+    depends_on:
+      - database
+    ports:
+      - "8000:8000"
+    networks:
+      - ozluk_net
+
+  frontend:
+    container_name: frontend
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    volumes:
+      - ./frontend/src:/usr/share/nginx/html
+    ports:
+      - "8080:80"
+    depends_on:
+      - backend
+    networks:
+      - ozluk_net
+
+volumes:
+  pgdata:

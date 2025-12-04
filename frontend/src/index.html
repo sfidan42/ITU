@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Django Tables Frontend</title>
+  <link rel="stylesheet" href="style.css">
+  <script type="module" src="config.js"></script>
+  <script type="module" src="app.js"></script>
+</head>
+<body>
+  <h1>Database Tables</h1>
+
+  <!-- Search -->
+  <div class="search-bar">
+    <input type="text" id="search-input" placeholder="Search by TC No or Name...">
+    <button id="search-btn">Search Person</button>
+  </div>
+
+  <!-- Tabs -->
+  <div class="tabs" id="tabs"></div>
+
+  <!-- Add new -->
+  <div id="toolbar">
+    <button id="add-btn">➕ Add New Record</button>
+  </div>
+
+  <!-- Table Containers -->
+  <div id="tables-container"></div>
+
+  <!-- Popups -->
+  <div id="popup" class="popup hidden">
+    <div class="popup-content">
+      <span class="close">&times;</span>
+      <div id="popup-body"></div>
+    </div>
+  </div>
+</body>
+</html>
